@@ -93,6 +93,7 @@ namespace IBIZApp
 
             if (m == BigInteger.One)
                 return 0;
+
             while(a > BigInteger.One)
             {
                 var q = BigInteger.Divide(a, m);
@@ -102,14 +103,51 @@ namespace IBIZApp
                 y = BigInteger.Multiply(BigInteger.Subtract(x, q), y);
                 x = b;
             }
+
             if (x < 0)
                 x += m0;
 
             return x;
-
-            
-
         }
 
+        public static BigInteger KínaiMaradéktétel(BigInteger[] c, BigInteger[] m)
+        {
+            //kitalálok valami szebb módszert, 
+            //mint egy kiírt foreach;
+            var M = m[1];
+
+            var x = BigInteger.Zero;
+
+            for (int i = 0; i < c.Length; i++)
+            {
+                var Mi = BigInteger.Divide(M, m[i]);
+                var Yi = ModInverse(Mi, m[i]);
+                x += BigInteger.Multiply(BigInteger.Multiply(c[i],Mi),Yi);
+            }
+            BigInteger.DivRem(x,M, out BigInteger rem);
+
+            return rem;
+        }
+
+        public static bool Fermat_Teszt(int n, int k)
+        {
+            if (n <= 1 || n == 4)
+                return false;
+            if (n <= 3)
+                return true;
+
+            while (k > 0)
+            {
+                Random r = new Random();
+                var a = r.Next(2, n - 2);
+
+                if (Pow(a,n-1)%n != 1 || Euclides(a,n)  != 1)
+                    return false;
+            k--;
+            }
+            return true;
+        }
+
+        //még kell Miller-Rabin és RSA
     }
 }
