@@ -114,7 +114,9 @@ namespace IBIZApp
         {
             //kitalálok valami szebb módszert, 
             //mint egy kiírt foreach;
-            var M = m[1];
+            BigInteger M = BigInteger.One;
+            foreach (var item in m)
+                M *= item;
 
             var x = BigInteger.Zero;
 
@@ -149,5 +151,11 @@ namespace IBIZApp
         }
 
         //még kell Miller-Rabin és RSA
+
+        public static bool Miller_Rabin_primetest(BigInteger n, BigInteger k)
+        {
+            return true;
+        }
+
     }
 }
