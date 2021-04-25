@@ -140,8 +140,7 @@ namespace IBIZApp
 
             while (k > 0)
             {
-                Random r = new Random();
-                var a = r.Next(2, n - 2);
+                var a = GenerateRandom(2, n - 2); //r.Next(2, n - 2);
 
                 if (Pow(a,n-1)%n != 1 || Euclides(a,n)  != 1)
                     return false;
@@ -152,9 +151,60 @@ namespace IBIZApp
 
         //még kell Miller-Rabin és RSA
 
-        public static bool Miller_Rabin_primetest(BigInteger n, BigInteger k)
+        public static bool Miller_Rabin_Test(int n, int k)
         {
+            if (n <= 1 || n == 4)
+                return false;
+            if (n <= 3)
+                return true;
+            var m = n - 1;
+
+            while (m%2 == 0)
+            {
+                m = m / 2;
+                for (int i = 0; i < k; i++)
+                {
+                    var a = GenerateRandom(2, n - 2);
+                    var x = ModPow(a, m, n);
+
+                    if (x == 1 || x == n - 1)
+                        continue;
+
+                    while (m != n-1)
+                    {
+                        x = BigInteger.Pow(x,2) % n;
+                        m = m * 2;
+
+                        if (x == 1)
+                            return false;
+
+                        if (x == n - 1)
+                            continue;
+                    }
+                }
+                return false;
+            }
             return true;
+        }
+
+        public BigInteger Encrypt()
+        {
+
+            return 0;
+        }
+
+
+
+
+        private static int GenerateRandom(int min, int max)
+        {
+            Random random = new Random();
+            byte[] data = new byte[max];
+            random.NextBytes(data);
+            var big = new BigInteger(data);
+
+            Random r = new Random();
+            return r.Next(min,max);
         }
 
     }
