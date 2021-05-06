@@ -97,8 +97,6 @@ namespace IBIZApp
             var a = Helper.ParseBigInt(act);
                 
             return SetNum2(a, num2, Testfunc, act);
-
-
         }
 
         
@@ -144,7 +142,7 @@ namespace IBIZApp
 
         public static BigInteger Power(BigInteger x, BigInteger y)
         {
-            BigInteger res = BigInteger.One;
+            var res = BigInteger.One;
 
             while (y > 0)
             {
@@ -206,12 +204,12 @@ namespace IBIZApp
             BigInteger M = m[0];
             BigInteger[] Mi = new BigInteger[m.Length];
             BigInteger[] Yi = new BigInteger[m.Length];
+
             for (int i = 1; i < m.Length; i++)
-            {
                 M *= m[i];
-            }
 
             BigInteger x = 0;
+
             for (int i = 0; i < c.Length; i++)
             {
                 Mi[i] = M / m[i];
@@ -270,7 +268,7 @@ namespace IBIZApp
                 m = m * 2;
 
                 if (x == 1) return false;
-                if ((int)x == num - 1) return true;
+                if (x == num - 1) return true;
             }
             return false;
         }
@@ -320,7 +318,6 @@ namespace IBIZApp
 
         public BigInteger Decrypt(BigInteger num)
         {
-
             BigInteger P_KMT = ModPow(num % P, D % (P - 1), P);
             BigInteger Q_KMT = ModPow(num % Q, D % (Q - 1), Q);
 
