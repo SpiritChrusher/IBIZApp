@@ -14,16 +14,16 @@ namespace IBIZApp
 
         public static bool PrimE(BigInteger szam)
         {
-            int[] teszt_szamok = { 3, 7, 8 };
 
             if (szam % 2 == 0)
                 return false;
 
-            for (int i = 0; i < teszt_szamok.Length; i++)
+            Random r = new();
+            for (int i = 0; i < 4; i++)
             {
-                if (!MyRSA.MillerRabin((BigInteger)szam, teszt_szamok[i])) 
+                if (!MyRSA.MillerRabin(szam, r.Next(2,int.MaxValue)))
                     return false;
-            }
+            }          
             return true;
         }
 
@@ -47,8 +47,8 @@ namespace IBIZApp
     {
         public BigInteger P { get; init; }
         public BigInteger Q { get; init; }
-        BigInteger PhiN { get; init; }
         BigInteger N { get; init; }
+        BigInteger PhiN { get; init; }
         BigInteger E { get; init; }
         BigInteger D { get; init; }
 
@@ -144,16 +144,14 @@ namespace IBIZApp
 
         public static BigInteger Power(BigInteger x, BigInteger y)
         {
-            BigInteger res = BigInteger.One;     // Initialize result
+            BigInteger res = BigInteger.One;
 
             while (y > 0)
             {
-                // If y is odd, multiply x with result
                 if ((y & 1) != 0)
                     res = BigInteger.Multiply(res,x);
 
-                // y must be even now
-                y = y >> 1; // y = y/2
+                y = y >> 1;
                 x = BigInteger.Multiply(x,x);
             }
             return res;
@@ -188,13 +186,13 @@ namespace IBIZApp
 
             while(a > BigInteger.One)
             {
-                var b = BigInteger.Divide(a, m);
-                var c = m;
+                var q = BigInteger.Divide(a, m);
+                var b = m;
                 m = a % m;
-                a = c;
-                c = y;
-                y = BigInteger.Subtract(x,BigInteger.Multiply(b, y));
-                x = c;
+                a = b;
+                b = y;
+                y = BigInteger.Subtract(x,BigInteger.Multiply(q, y));
+                x = b;
             }
 
             if (x < 0)
@@ -268,7 +266,7 @@ namespace IBIZApp
 
             while (m != num - 1)
             {
-                x = (ModPow((BigInteger)x, 2, num));
+                x = (ModPow(x, 2, num));
                 m = m * 2;
 
                 if (x == 1) return false;
@@ -317,17 +315,17 @@ namespace IBIZApp
             return true;
         }
        */
-        public BigInteger Encrypt(BigInteger input) => ModPow(input, E, N);
+        public BigInteger Encrypt(BigInteger num) => ModPow(num, E, N);
 
 
-        public BigInteger Decrypt(BigInteger input)
+        public BigInteger Decrypt(BigInteger num)
         {
 
-            BigInteger Q_KMT = ModPow(input % Q, D % (Q - 1), Q);
-            BigInteger P_KMT = ModPow(input % P, D % (P - 1), P);
+            BigInteger P_KMT = ModPow(num % P, D % (P - 1), P);
+            BigInteger Q_KMT = ModPow(num % Q, D % (Q - 1), Q);
 
-            BigInteger[] c = { P_KMT, Q_KMT };
             BigInteger[] m = { P, Q };
+            BigInteger[] c = { P_KMT, Q_KMT };
 
             return Kínai_Maradék_Tétel(m, c);
         }
