@@ -11,7 +11,8 @@ Console.WriteLine(4151%53);
 BigInteger.DivRem(4151, 53, out var rem);
 Console.WriteLine(rem);
 
-MyRSA tryhard = new(541, 1009, 1409, 135);
+
+MyRSA tryhard = new(541, 1009, 1409);
 
 Console.WriteLine("Add meg a titkosítandó számot");
 

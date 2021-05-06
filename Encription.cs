@@ -16,7 +16,7 @@ namespace IBIZApp
             int[] teszt_szamok = { 3, 7, 8 };
             for (int i = 0; i < teszt_szamok.Length; i++)
             {
-                if (!MyRSA.MillerRabin2((long)szam, teszt_szamok[i])) 
+                if (!MyRSA.MillerRabin2((BigInteger)szam, teszt_szamok[i])) 
                     return false;
             }
             return true;
@@ -47,14 +47,14 @@ namespace IBIZApp
         BigInteger E { get; init; }
         BigInteger D { get; init; }
 
-        public MyRSA(BigInteger p, BigInteger q, BigInteger e, BigInteger d)
+        public MyRSA(BigInteger p, BigInteger q, BigInteger e)
         {
             P = SetNum(p, Helper.PrimE);
             Q = SetNum(q, Helper.PrimE);
             N = P * Q;
             PhiN = (P - 1) * (Q - 1);
             E = SetNum2(e, PhiN, (e, PhiN) =>  Euclides(e, PhiN) == 1 ? true : false);
-            D = ModInverse(d, PhiN);
+            D = ModInverse(e, PhiN);
         }
 
         private BigInteger SetNum(BigInteger number, Func<BigInteger,bool> Testfunc)
@@ -138,11 +138,11 @@ namespace IBIZApp
             }
             return res;
         }
-        public static BigInteger ModPow(BigInteger a, BigInteger e, BigInteger m)
-           => BigInteger.ModPow(a, e, m);
+       /* public static BigInteger BasicModPow(BigInteger a, BigInteger e, BigInteger m)
+           => BigInteger.ModPow(a, e, m);*/
        
 
-        public static BigInteger MyModPow(BigInteger a, BigInteger e, BigInteger m)
+        public static BigInteger ModPow(BigInteger a, BigInteger e, BigInteger m)
         {
             BigInteger result = BigInteger.One;
             BigInteger apow = a;
@@ -168,12 +168,13 @@ namespace IBIZApp
 
             while(a > BigInteger.One)
             {
-                var Q = BigInteger.Divide(a, m);
-                var b = y;
-                a = b;
-                //a 2 következő sor lehet, hogy fordítva kell
-                y = BigInteger.Multiply(BigInteger.Subtract(x, Q), y);
-                x = b;
+                var b = BigInteger.Divide(a, m);
+                var c = m;
+                m = a % m;
+                a = c;
+                c = y;
+                y = BigInteger.Subtract(x,BigInteger.Multiply(b, y));
+                x = c;
             }
 
             if (x < 0)
@@ -182,7 +183,7 @@ namespace IBIZApp
             return x;
         }
 
-        public static BigInteger KínaiMaradéktétel(BigInteger[] c, BigInteger[] m)
+       /* public static BigInteger KínaiMaradéktétel(BigInteger[] c, BigInteger[] m)
         {
             //kitalálok valami szebb módszert, 
             //mint egy kiírt foreach;
@@ -201,6 +202,29 @@ namespace IBIZApp
             BigInteger.DivRem(x,M, out BigInteger rem);
 
             return rem;
+        }*/
+
+        public BigInteger KínaiMaradéktétel(BigInteger[] m, BigInteger[] c)
+        {
+            BigInteger M = m[0];
+            BigInteger[] Mi = new BigInteger[m.Length];
+            BigInteger[] Yi = new BigInteger[m.Length];
+            for (int i = 1; i < m.Length; i++)
+            {
+                M *= m[i];
+            }
+
+            BigInteger x = 0;
+            for (int i = 0; i < c.Length; i++)
+            {
+                Mi[i] = M / m[i];
+                Yi[i] = ModInverse(Mi[i], m[i]);
+                x += c[i] * Yi[i] * Mi[i];
+            }
+
+            x = x % M;
+
+            return x;
         }
 
         public static bool Fermat_Teszt(int n, int k)
@@ -223,9 +247,9 @@ namespace IBIZApp
 
         //még kell Miller-Rabin és RSA
 
-        public static bool MillerRabin2(long num, int a)
+        public static bool MillerRabin2(BigInteger num, int a)
         {
-            long m = num - 1;
+            BigInteger m = num - 1;
 
             if (num <= 1 || num == 4)
                 return false;
@@ -246,7 +270,7 @@ namespace IBIZApp
 
             while (m != num - 1)
             {
-                x = (ModPow((long)x, 2, num));
+                x = (ModPow((BigInteger)x, 2, num));
                 m = m * 2;
 
                 if (x == 1) return false;
@@ -255,7 +279,7 @@ namespace IBIZApp
             return false;
         }
 
-        public static bool Miller_Rabin_Test(long n, long k)
+        public static bool Miller_Rabin_Test(BigInteger n, BigInteger k)
         {
             if (n <= 1 || n == 4)
                 return false;
