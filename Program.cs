@@ -3,13 +3,26 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using IBIZApp;
 
-Console.WriteLine(Encription.Euclides(70,5));
-var list = Encription.ExtEuclides(112,63);
+Console.WriteLine(MyRSA.Euclides(70,5));
+var list = MyRSA.ExtEuclides(112,63);
 list.ForEach(x => global::System.Console.WriteLine(x));
 
 Console.WriteLine(4151%53);
 BigInteger.DivRem(4151, 53, out var rem);
 Console.WriteLine(rem);
+
+MyRSA tryhard = new(541, 1009, 1409, 135);
+
+Console.WriteLine("Add meg a titkosítandó számot");
+
+BigInteger titkositando = BigInteger.Parse(Console.ReadLine());
+
+BigInteger tikosított = tryhard.Encryptor(titkositando);
+
+Console.WriteLine("A tiktosított szám: {0}", tikosított);
+
+
+Console.WriteLine($"{titkositando} ?= {tryhard.Decryptor(tikosított)}");
 
 
 /*Adott az alábbi bináris fa (melynek gyökerét a "gymut" mutató jelöli ki) és egy vektor (V):
@@ -50,28 +63,33 @@ Válaszolja meg az alábbi kérdéseket a fenti algoritmusra ill. az így módos
 9/d feladat:	Hány eleme van a legnagyobb elemszámú tökéletesen kiegyensúlyozott részfának? (1 pont)
 
 */
-int[] Vektor = { 28, 44, 56, 64, 81};
+/* unsafe 
+{
+    int[] Vektor = { 28, 44, 56, 64, 81 };
+    faelem gy = new faelem();
+    gy.adat = 50;
+    faelem* gymut = &gy;
+    faelem fa = new();
 
-
-
-
+    fa.Feladat(gymut, Vektor);
+}
+Console.WriteLine("end");
+*/
 unsafe struct faelem
 {
-    int adat;
-    faelem* bal;
-    faelem* jobb;
+    public int adat;
+    public faelem* bal;
+    public faelem* jobb;
 
-    faelem* gyoker;
+    public faelem* gyoker;
 
-
-
-    public faelem(int ertek)
+   /* public faelem(int ertek)
     {
         adat = ertek;
         bal = null;
         jobb = null;
         gyoker = null;
-    }
+    }*/
     public faelem* Feladat(faelem* rootptr, int[] V)
     {
         for (int i = 0; i < V.Length; i++)
@@ -126,9 +144,9 @@ unsafe struct faelem
 
             faelem* uj = (faelem*)Marshal.AllocHGlobal(size);
           
-            uj->adat = ertek;
             uj->bal = null;
             uj->jobb = null; 
+            uj->adat = ertek;
             gyoker = uj; } 
         else 
         { 
@@ -153,9 +171,9 @@ unsafe struct faelem
                 else 
                 { 
                     faelem* uj = (faelem*)Marshal.SizeOf(typeof(faelem));
-                    uj->adat = ertek; 
                     uj->bal = uj->jobb = null; 
                     akt->bal = uj;
+                    uj->adat = ertek; 
                 } 
             } 
             else/*if ertek > akt->adat*/

@@ -8,8 +8,80 @@ using static System.Math;
 
 namespace IBIZApp
 {
-    public class Encription
+
+    public static class Helper
     {
+        public static bool PrimE(BigInteger szam)
+        {
+            int[] teszt_szamok = { 3, 7, 8 };
+            for (int i = 0; i < teszt_szamok.Length; i++)
+            {
+                if (!MyRSA.MillerRabin2((long)szam, teszt_szamok[i])) 
+                    return false;
+            }
+            return true;
+        }
+
+        public static BigInteger ParseBigInt()
+        {
+            Console.WriteLine("Egy számot kérlek:");
+            var szam = Console.ReadLine();
+            var succes = BigInteger.TryParse(szam,out BigInteger result);
+
+            if (succes)
+                return result;
+
+            return ParseBigInt();
+            
+        }
+
+        public static bool AreRelativePrimes(BigInteger a, BigInteger b) => MyRSA.Euclides(a, b) == 1;
+    }
+
+    public class MyRSA
+    {
+        public BigInteger P { get; init; }
+        public BigInteger Q { get; init; }
+        BigInteger PhiN { get; init; }
+        BigInteger N { get; init; }
+        BigInteger E { get; init; }
+        BigInteger D { get; init; }
+
+        public MyRSA(BigInteger p, BigInteger q, BigInteger e, BigInteger d)
+        {
+            P = SetNum(p, Helper.PrimE);
+            Q = SetNum(q, Helper.PrimE);
+            N = P * Q;
+            PhiN = (P - 1) * (Q - 1);
+            E = SetNum2(e, PhiN, (e, PhiN) =>  Euclides(e, PhiN) == 1 ? true : false);
+            D = ModInverse(d, PhiN);
+        }
+
+        private BigInteger SetNum(BigInteger number, Func<BigInteger,bool> Testfunc)
+        {
+            if (Testfunc(number))
+               return number;
+
+            var a = Helper.ParseBigInt();
+           
+            return SetNum(a, Testfunc);
+            
+
+        }
+        private BigInteger SetNum2(BigInteger number, BigInteger num2, Func<BigInteger, BigInteger, bool> Testfunc)
+        {
+            if (Testfunc(number, num2))
+                return number;
+
+            var a = Helper.ParseBigInt();
+                
+            return SetNum2(a, num2, Testfunc);
+
+
+        }
+
+        
+
         #region Euklidesz
         public static BigInteger Euclides
             (BigInteger a, BigInteger b) => b != 0 ? Euclides(b,a%b) : a;
@@ -27,14 +99,14 @@ namespace IBIZApp
             while (!b.IsZero)
             {
                 var m = a % b;
-                var q = a / b;
+                var Q = a / b;
                 a = b;
                 b = m;
                 x = x1;
                 y = y1;
 
-                x1 = BigInteger.Add(BigInteger.Multiply(x1,q),x0);
-                y1 = BigInteger.Add(BigInteger.Multiply(y1, q), y0);
+                x1 = BigInteger.Add(BigInteger.Multiply(x1,Q),x0);
+                y1 = BigInteger.Add(BigInteger.Multiply(y1, Q), y0);
                 x0 = x;
                 y0 = y;
 
@@ -96,11 +168,11 @@ namespace IBIZApp
 
             while(a > BigInteger.One)
             {
-                var q = BigInteger.Divide(a, m);
+                var Q = BigInteger.Divide(a, m);
                 var b = y;
                 a = b;
                 //a 2 következő sor lehet, hogy fordítva kell
-                y = BigInteger.Multiply(BigInteger.Subtract(x, q), y);
+                y = BigInteger.Multiply(BigInteger.Subtract(x, Q), y);
                 x = b;
             }
 
@@ -151,7 +223,39 @@ namespace IBIZApp
 
         //még kell Miller-Rabin és RSA
 
-        public static bool Miller_Rabin_Test(int n, int k)
+        public static bool MillerRabin2(long num, int a)
+        {
+            long m = num - 1;
+
+            if (num <= 1 || num == 4)
+                return false;
+            if (num <= 3) 
+                return true;
+
+            do
+            {
+                m /= 2;
+            } while (m % 2 == 0);
+
+            var x = ModPow(a, m, num);
+
+            if (x == 1 || x == num - 1)
+            {
+                return true;
+            }
+
+            while (m != num - 1)
+            {
+                x = (ModPow((long)x, 2, num));
+                m = m * 2;
+
+                if (x == 1) return false;
+                if ((int)x == num - 1) return true;
+            }
+            return false;
+        }
+
+        public static bool Miller_Rabin_Test(long n, long k)
         {
             if (n <= 1 || n == 4)
                 return false;
@@ -164,7 +268,7 @@ namespace IBIZApp
                 m = m / 2;
                 for (int i = 0; i < k; i++)
                 {
-                    var a = GenerateRandom(2, n - 2);
+                    var a = GenerateRandom(2, (int)n - 2);
                     var x = ModPow(a, m, n);
 
                     if (x == 1 || x == n - 1)
@@ -187,14 +291,20 @@ namespace IBIZApp
             return true;
         }
 
-        public BigInteger Encrypt()
+        public BigInteger Encryptor(BigInteger input) => ModPow(input, E, N);
+
+
+        public BigInteger Decryptor(BigInteger input)
         {
 
-            return 0;
+            BigInteger Q_to_crt = ModPow(input % Q, D % (Q - 1), Q);
+            BigInteger P_to_crt = ModPow(input % P, D % (P - 1), P);
+
+            BigInteger[] c = { P_to_crt, Q_to_crt };
+            BigInteger[] m = { P, Q };
+
+            return KínaiMaradéktétel(m, c);
         }
-
-
-
 
         private static int GenerateRandom(int min, int max)
         {
