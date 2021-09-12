@@ -1,12 +1,12 @@
-﻿using System;
+﻿using IBIZApp;
+using System;
 using System.Numerics;
-using System.Runtime.InteropServices;
-using IBIZApp;
 
 
 MyRSA tryhard = new();//(35423, 1489661, 31577);
 
-BigInteger thenumber = Helper.ParseBigInt(() => Console.WriteLine("Give me a number to encrypt!"));
+BigInteger thenumber = Helper.ParseBigInt(() => 
+    Console.WriteLine("Give me a number to encrypt!"));
 
 BigInteger enrypted = tryhard.Encrypt(thenumber);
 

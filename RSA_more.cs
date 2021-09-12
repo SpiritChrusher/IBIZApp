@@ -1,48 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 using static System.Math;
 
 namespace IBIZApp
 {
-
-    public static class Helper
-    {
-
-        public static bool PrimE(BigInteger szam)
-        {
-
-            if (szam % 2 == 0)
-                return false;
-
-            Random r = new();
-            for (int i = 0; i < 4; i++)
-            {
-                if (!MyRSA.MillerRabin(szam, r.Next(2,int.MaxValue)))
-                    return false;
-            }          
-            return true;
-        }
-
-        public static BigInteger ParseBigInt(Action act)
-        {
-            act();
-            var szam = Console.ReadLine();
-            var succes = BigInteger.TryParse(szam,out BigInteger result);
-
-            if (succes)
-                return result;
-
-            return ParseBigInt(act);
-            
-        }
-
-        public static bool AreRelativePrimes(BigInteger a, BigInteger b) => MyRSA.Euclides(a, b) == 1;
-    }
-
     public class MyRSA
     {
         public BigInteger P { get; init; }
@@ -54,32 +16,35 @@ namespace IBIZApp
 
         public MyRSA()
         {
-            P = SetNum(Helper.ParseBigInt(() => Console.WriteLine("Írja be a P értékét!")), 
-                Helper.PrimE, () => Console.WriteLine("Írja be a P értékét!"));
+            P = SetNum(Helper.ParseBigInt(() => Console.WriteLine("Give me the P value!")), 
+                Helper.IsPrime, () => Console.WriteLine("Give me the P value!"));
 
-            Q = SetNum(Helper.ParseBigInt(() => Console.WriteLine("Írja be a Q értékét!")), 
-                Helper.PrimE, () => Console.WriteLine("Írja be a Q értékét!"));
+            Q = SetNum(Helper.ParseBigInt(() => Console.WriteLine("Give me the Q value!")), 
+                Helper.IsPrime, () => Console.WriteLine("Give me the Q value!"));
 
             N = P * Q;
             PhiN = (P - 1) * (Q - 1);
 
-            E = SetNum2(Helper.ParseBigInt(() => Console.WriteLine("Írja be az E értékét!")),
-                PhiN, (e, PhiN) => Euclides(e, PhiN) == 1 ? true : false, () => Console.WriteLine("Írja be az E értékét!"));
+            E = SetNum2(Helper.ParseBigInt(() => Console.WriteLine("Give me the E value!")),
+                PhiN, (e, PhiN) => Euclides(e, PhiN) == 1 ? true : false, 
+                () => Console.WriteLine("Give me thez E value!"));
 
             D = ModInverse(E, PhiN);
         }
 
         public MyRSA(BigInteger p, BigInteger q, BigInteger e)
         {
-            P = SetNum(p, Helper.PrimE, () => Console.WriteLine("Írja be a P érétkét!"));
-            Q = SetNum(q, Helper.PrimE, () => Console.WriteLine("Írja be a Q értékét!"));
+            P = SetNum(p, Helper.IsPrime, () => Console.WriteLine("Give me the P value!"));
+            Q = SetNum(q, Helper.IsPrime, () => Console.WriteLine("Give me the Q value!"));
             N = P * Q;
             PhiN = (P - 1) * (Q - 1);
-            E = SetNum2(e, PhiN, (e, PhiN) =>  Euclides(e, PhiN) == 1 ? true : false, () => Console.WriteLine("Írja be az E értékét!"));
+            E = SetNum2(e, PhiN, (e, PhiN) =>  Euclides(e, PhiN) == 1 ? true : false, 
+                () => Console.WriteLine("Give me the E value!"));
             D = ModInverse(e, PhiN);
         }
 
-        private BigInteger SetNum(BigInteger number, Func<BigInteger,bool> Testfunc, Action act)
+        private BigInteger SetNum(BigInteger number, Func<BigInteger,bool> Testfunc, 
+            Action act)
         {
             if (Testfunc(number))
                return number;
@@ -89,7 +54,8 @@ namespace IBIZApp
             
 
         }
-        private BigInteger SetNum2(BigInteger number, BigInteger num2, Func<BigInteger, BigInteger, bool> Testfunc, Action act)
+        private BigInteger SetNum2(BigInteger number, BigInteger num2, 
+            Func<BigInteger, BigInteger, bool> Testfunc, Action act)
         {
             if (Testfunc(number, num2))
                 return number;
@@ -102,9 +68,9 @@ namespace IBIZApp
         
         #region Euklidesz
         public static BigInteger Euclides
-            (BigInteger a, BigInteger b) => b != 0 ? Euclides(b,a%b) : a;
+            (BigInteger a, BigInteger b) => b != 0 ? Euclides(b, a % b) : a;
 
-        public static List<BigInteger> ExtEuclides(BigInteger a, BigInteger b)
+        public static List<BigInteger> ExtendedEuclides(BigInteger a, BigInteger b)
         {
             var x0 = BigInteger.One;
             var x1 = BigInteger.Zero;
@@ -222,7 +188,7 @@ namespace IBIZApp
             return x;
         }
 
-        public static bool Fermat_Teszt(long n, long k)
+        public static bool Fermat_Test(long n, long k)
         {
             if (n <= 1 || n == 4)
                 return false;
